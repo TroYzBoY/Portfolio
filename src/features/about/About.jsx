@@ -2,7 +2,6 @@ import React from "react";
 import ClickSpark from "../../components/effects/ClickSpark";
 import CountUp from "../../components/ui/CountUp";
 import ElectricBorder from "../../components/ui/ElectricBorder";
-import profilePic from "../../assets/images/picc.jpg";
 import {
   useScrollAnimation,
   useStaggerAnimation,

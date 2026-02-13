@@ -131,7 +131,7 @@ const Projects = () => {
       description:
         "Interactive game development project built with Python and Pygame, showcasing game mechanics and user interaction.",
       tech: ["Python", "Pygame", "Game Development"],
-      link: "https://github.com/TroYzBoY",
+      link: "https://github.com/TroYzBoY/pygame",
       image: pygameImage,
     },
     {
@@ -140,7 +140,7 @@ const Projects = () => {
       description:
         "Face recognition system using computer vision and machine learning for identity verification and authentication.",
       tech: ["Python", "OpenCV", "Machine Learning", "Computer Vision"],
-      link: "https://github.com/TroYzBoY",
+      link: "https://github.com/TroYzBoY/Faceless",
       image: faceIdImage,
     },
     {
@@ -149,7 +149,7 @@ const Projects = () => {
       description:
         "Mini e-commerce platform with product management, shopping cart, and payment integration features.",
       tech: ["React", "Node.js", "E-commerce", "Payment Integration"],
-      link: "https://github.com/TroYzBoY",
+      link: "https://github.com/TroYzBoY/Aura-E-commerce",
       image: auraImage,
     },
     {
@@ -158,7 +158,7 @@ const Projects = () => {
       description:
         "Recreating popular websites with modern web technologies, focusing on responsive design and user experience.",
       tech: ["HTML", "CSS", "JavaScript", "Responsive Design"],
-      link: "https://github.com/TroYzBoY",
+      link: "https://github.com/TroYzBoY/Package-Site-Clone",
       image:
         "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=800&h=600&fit=crop",
     },
