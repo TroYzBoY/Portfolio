@@ -8,6 +8,7 @@ const Experience = () => {
   const [pathLength, setPathLength] = useState(0);
   const [timelineHeight, setTimelineHeight] = useState(0);
   const [sectionHeight, setSectionHeight] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const sectionRef = useRef(null);
   const timelineRef = useRef(null);
   const pathRef = useRef(null);
@@ -17,6 +18,17 @@ const Experience = () => {
     duration: 1.2,
     delay: 0.2,
   });
+
+  // Detect mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Animate timeline container on scroll
   useEffect(() => {
@@ -285,7 +297,7 @@ const Experience = () => {
               className="absolute left-1/2 pointer-events-none"
               style={{
                 top: 0,
-                height: `${timelineHeight + 345}px`,
+                height: `${timelineHeight + 345 - (isMobile ? 100 : 0)}px`,
                 width: "5px",
                 backgroundColor: "#22d3ee",
                 opacity: 0.9,
@@ -341,17 +353,17 @@ const Experience = () => {
                     }`}
                   >
                     {/* Company Name */}
-                    <div className="experience-text font-bold text-3xl sm:text-4xl md:text-6xl xl:text-7xl lg:mb-5 mb-2 leading-tight company-name text-white break-words">
+                    <div className="experience-text font-bold text-3xl sm:text-4xl md:text-6xl xl:text-7xl lg:mb-2 mb-1 leading-tight company-name text-white break-words">
                       {exp.company}
                     </div>
 
                     {/* Role */}
-                    <div className="experience-text-secondary text-lg sm:text-xl md:text-3xl xl:text-4xl font-light lg:mb-3 mb-2 leading-relaxed role-text text-white/60 break-words">
+                    <div className="experience-text-secondary text-lg sm:text-xl md:text-3xl xl:text-4xl font-light lg:mb-1.5 mb-1 leading-relaxed role-text text-white/60 break-words">
                       {exp.role} ({exp.type})
                     </div>
 
                     {/* Description */}
-                    <div className="experience-text-secondary text-sm sm:text-base md:text-lg leading-relaxed lg:mb-3 mb-2 max-w-xl description-text text-white/60 break-words">
+                    <div className="experience-text-secondary text-sm sm:text-base md:text-lg leading-relaxed lg:mb-1.5 mb-1 max-w-xl description-text text-white/60 break-words">
                       {exp.description}
                     </div>
 
