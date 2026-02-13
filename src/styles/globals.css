@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+/* Rotating circle animation */
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rotating-circle {
+  animation: rotate 20s linear infinite;
+}
+
+.rotating-circle circle {
+  filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.5));
+}
