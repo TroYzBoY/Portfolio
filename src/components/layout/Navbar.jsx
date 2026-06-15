@@ -1,255 +1,253 @@
-import React, { useState, useEffect } from "react";
-import DecryptedText from "../ui/DecryptedText";
-import ClickSpark from "../effects/ClickSpark";
-import { useSmoothScroll } from "../../hooks/useSmoothScroll";
+import React, { useState, useEffect, useRef } from "react";
 
-const Navbar = () => {
+const navLinks = [
+  { name: "Home", href: "#home" },
+  { name: "About", href: "#about" },
+  { name: "Skills", href: "#skills" },
+  { name: "Projects", href: "#projects" },
+  { name: "Experience", href: "#experience" },
+  { name: "Education", href: "#education" },
+  { name: "Contact", href: "#contact" },
+];
+
+const Navbar = ({ theme, toggleTheme }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [language, setLanguage] = useState("en");
-  const [isLangOpen, setIsLangOpen] = useState(false);
-  const [isScrolledDown, setIsScrolledDown] = useState(false);
-  const { scrollToSection } = useSmoothScroll();
+  const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [activeId, setActiveId] = useState("home");
+  const navRef = useRef(null);
 
   useEffect(() => {
-    let lastScrollY = 0;
-
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      setIsScrolledDown(currentScrollY > lastScrollY && currentScrollY > 50);
-      lastScrollY = currentScrollY;
-    };
+      // Intro Spline section өнгөрөх хүртэл (бараг бүтэн viewport) navbar нуух
+      const introThreshold = window.innerHeight * 0.85;
+      setScrolled(currentScrollY > 20);
+      setHidden(currentScrollY < introThreshold);
 
+      // Scroll-spy: which section is currently in the upper viewport
+      const marker = window.innerHeight * 0.35;
+      let current = navLinks[0].href.replace("#", "");
+      for (const link of navLinks) {
+        const el = document.getElementById(link.href.replace("#", ""));
+        if (el && el.getBoundingClientRect().top <= marker) {
+          current = link.href.replace("#", "");
+        }
+      }
+      setActiveId(current);
+    };
+    handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
+  // Close mobile menu on Escape or outside click
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    const onClick = (e) => {
+      if (navRef.current && !navRef.current.contains(e.target)) setIsOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onClick);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onClick);
+    };
+  }, [isOpen]);
 
-  const navLinks = [
-    { name: "Home", href: "#home" },
-    { name: "About", href: "#about" },
-    { name: "Works", href: "#projects" },
-    { name: "Contact", href: "#contact" },
-  ];
-
-  const languages = [
-    { code: "en", name: "English", flag: "-" },
-    { code: "mn", name: "Монгол", flag: "-" },
-  ];
-
-  const currentLanguage =
-    languages.find((lang) => lang.code === language) || languages[0];
-
-  const handleLanguageChange = (code) => {
-    setLanguage(code);
-    setIsLangOpen(false);
-    localStorage.setItem("language", code);
+  const scrollToSection = (href) => {
+    const id = href.replace("#", "");
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+    setIsOpen(false);
   };
 
   return (
-    <ClickSpark
-      sparkColor="#fff"
-      sparkSize={10}
-      sparkRadius={15}
-      sparkCount={8}
-      duration={400}
+    <nav
+      ref={navRef}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 9000,
+        height: "var(--nav-h)",
+        transition: "transform 0.4s cubic-bezier(0.16,1,0.3,1), background 0.3s ease, border-color 0.3s ease",
+        transform: hidden ? "translateY(-100%)" : "translateY(0)",
+        background: scrolled ? "rgba(9,9,15,0.85)" : "transparent",
+        backdropFilter: scrolled ? "blur(20px)" : "none",
+        borderBottom: scrolled ? "1px solid var(--cq-border)" : "1px solid transparent",
+      }}
     >
-      <nav
-        className={`fixed top-0 left-0 right-0 z-[9999] transition-all duration-300 border-b border-black bg-black/80 backdrop-blur-xl ${isScrolledDown ? "-translate-y-full" : "translate-y-0"}`}
+      <div
+        style={{
+          maxWidth: 1280,
+          margin: "0 auto",
+          padding: "0 2rem",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
       >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16 ml-10 mr-10">
-            {/* Logo */}
-            <div className="flex-shrink-0">
-              <a
-                href="#home"
-                onClick={(e) => {
-                  e.preventDefault();
-                  scrollToSection("home");
-                }}
-                className="text-2xl font-bold tracking-wider transition-all duration-300 hover:scale-105 hover:drop-shadow-[0_0_20px_rgba(0,255,255,0.8)] drop-shadow-[0_0_10px_rgba(0,255,255,0.5)] flex items-center"
-              >
-                <DecryptedText
-                  text="fenrir._"
-                  speed={30}
-                  maxIterations={11}
-                  className="flex items-center"
-                  parentClassName="flex items-center"
-                />
-              </a>
-            </div>
-
-            {/* Desktop Menu */}
-            <div className="hidden md:flex items-center space-x-8">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    scrollToSection(link.href.substring(1));
-                  }}
-                  className="relative text-white light:text-gray-900 font-medium px-3 py-2 transition-all duration-300 hover:text-cyan-400 light:hover:text-cyan-600 group"
-                >
-                  {link.name}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyan-400 transition-all duration-300 group-hover:w-full shadow-[0_0_10px_rgba(0,255,255,0.5)]"></span>
-                </a>
-              ))}
-            </div>
-
-            {/* Right Side - Language & Menu Button */}
-            <div className="flex items-center gap-4">
-              {/* Language Selector - Desktop */}
-              <div
-                className="hidden md:block relative"
-                onMouseEnter={() => setIsLangOpen(true)}
-                onMouseLeave={() => setIsLangOpen(false)}
-              >
-                <button
-                  className="px-4 py-2 bg-cyan-400 text-black font-medium rounded-3xl transition-all duration-300 hover:bg-cyan-300 shadow-[0_0_15px_rgba(0,255,255,0.5)] hover:shadow-[0_0_25px_rgba(0,255,255,0.7)] flex items-center gap-2"
-                  aria-label="Change language"
-                >
-                  {/* Global Icon */}
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </button>
-
-                {isLangOpen && (
-                  <div className="absolute top-full right-0 mt-2 bg-black border-2 border-cyan-400 rounded-3xl shadow-[0_0_20px_rgba(0,255,255,0.5)] z-50 min-w-[150px] overflow-hidden">
-                    <div className="px-4 py-3 text-white font-semibold border-b-2 border-cyan-400">
-                      Language
-                    </div>
-                    {languages.map((lang) => (
-                      <button
-                        key={lang.code}
-                        onClick={() => handleLanguageChange(lang.code)}
-                        className={`w-full px-4 py-3 text-left flex items-center gap-3 transition-all duration-300 hover:bg-gray-800 ${
-                          language === lang.code
-                            ? "bg-cyan-400/20 text-cyan-400 font-semibold"
-                            : "text-white"
-                        }`}
-                      >
-                        <span className="text-xl">{lang.flag}</span>
-                        <span>{lang.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Language Selector - Mobile */}
-              <div
-                className="md:hidden relative"
-                onMouseEnter={() => setIsLangOpen(true)}
-                onMouseLeave={() => setIsLangOpen(false)}
-              >
-                <button
-                  className="p-2 bg-cyan-400 text-black rounded-3xl transition-all duration-300 hover:bg-cyan-300 shadow-[0_0_15px_rgba(0,255,255,0.5)]"
-                  aria-label="Change language"
-                >
-                  {/* Global Icon */}
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </button>
-
-                {isLangOpen && (
-                  <div className="absolute top-full right-0 mt-2 bg-black border-2 border-cyan-400 rounded-3xl shadow-[0_0_20px_rgba(0,255,255,0.5)] z-50 min-w-[150px] overflow-hidden">
-                    <div className="px-4 py-3 text-white font-semibold border-b-2 border-cyan-400">
-                      Language
-                    </div>
-                    {languages.map((lang) => (
-                      <button
-                        key={lang.code}
-                        onClick={() => handleLanguageChange(lang.code)}
-                        className={`w-full px-4 py-3 text-left flex items-center gap-3 transition-all duration-300 hover:bg-gray-800 ${
-                          language === lang.code
-                            ? "bg-cyan-400/20 text-cyan-400 font-semibold"
-                            : "text-white"
-                        }`}
-                      >
-                        <span className="text-xl">{lang.flag}</span>
-                        <span>{lang.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Hamburger Menu Button */}
-              <button
-                onClick={toggleMenu}
-                className="flex flex-col gap-1.5 focus:outline-none md:hidden"
-                aria-label="Toggle menu"
-              >
-                <span
-                  className={`w-6 h-0.5 bg-cyan-400 rounded transition-all duration-300 shadow-[0_0_5px_rgba(0,255,255,0.3)] ${
-                    isOpen ? "rotate-45 translate-y-2" : ""
-                  }`}
-                ></span>
-                <span
-                  className={`w-6 h-0.5 bg-cyan-400 rounded transition-all duration-300 shadow-[0_0_5px_rgba(0,255,255,0.3)] ${
-                    isOpen ? "opacity-0" : ""
-                  }`}
-                ></span>
-                <span
-                  className={`w-6 h-0.5 bg-cyan-400 rounded transition-all duration-300 shadow-[0_0_5px_rgba(0,255,255,0.3)] ${
-                    isOpen ? "-rotate-45 -translate-y-2" : ""
-                  }`}
-                ></span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        <div
-          className={`md:hidden transition-all duration-300 ease-in-out overflow-hidden ${
-            isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-          }`}
+        {/* Logo */}
+        <a
+          href="#home"
+          onClick={(e) => { e.preventDefault(); scrollToSection("#home"); }}
+          style={{
+            fontFamily: "'Space Mono', monospace",
+            fontSize: "1.1rem",
+            color: "var(--cq-text)",
+            textDecoration: "none",
+            letterSpacing: "0.05em",
+          }}
         >
-          <div className="px-2 pt-2 pb-3 space-y-1 bg-gradient-to-br from-black to-gray-950 light:from-gray-50 light:to-white border-t border-cyan-400/20 light:border-cyan-600/30">
-            {navLinks.map((link) => (
+          <span style={{ color: "var(--cq-cyan)" }}>&lt;</span>
+          <span>/</span>
+          <span style={{ color: "var(--cq-cyan)" }}>&gt;</span>
+        </a>
+
+        {/* Desktop nav */}
+        <div
+          className="hidden md:flex"
+          style={{ gap: "2rem", alignItems: "center" }}
+        >
+          {navLinks.map((link) => {
+            const id = link.href.replace("#", "");
+            return (
               <a
                 key={link.name}
                 href={link.href}
-                className="block px-3 py-2 text-white light:text-gray-900 font-medium hover:bg-cyan-400/10 light:hover:bg-cyan-100 hover:text-cyan-400 light:hover:text-cyan-600 transition-all duration-300 rounded"
-                onClick={(e) => {
-                  e.preventDefault();
-                  scrollToSection(link.href.substring(1));
-                  setIsOpen(false);
+                aria-current={activeId === id ? "true" : undefined}
+                className={`nav-link${activeId === id ? " active" : ""}`}
+                onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
+                style={{
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: "0.85rem",
+                  fontWeight: 400,
+                  textDecoration: "none",
+                  letterSpacing: "0.04em",
                 }}
               >
                 {link.name}
               </a>
-            ))}
-          </div>
+            );
+          })}
         </div>
-      </nav>
-    </ClickSpark>
+
+        {/* Right controls */}
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            style={{
+              background: "none",
+              border: "1px solid var(--cq-border)",
+              borderRadius: "8px",
+              padding: "6px 10px",
+              color: "var(--cq-muted)",
+              cursor: "pointer",
+              fontSize: "0.8rem",
+              fontFamily: "'Space Mono', monospace",
+              transition: "border-color 0.2s, color 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--cq-cyan)";
+              e.currentTarget.style.color = "var(--cq-cyan)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--cq-border)";
+              e.currentTarget.style.color = "var(--cq-muted)";
+            }}
+          >
+            {theme === "dark" ? "☀" : "☾"}
+          </button>
+
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="md:hidden"
+            aria-label={isOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isOpen}
+            aria-controls="mobile-menu"
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              flexDirection: "column",
+              gap: "5px",
+              padding: "4px",
+            }}
+          >
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                style={{
+                  display: "block",
+                  width: "22px",
+                  height: "1px",
+                  background: "var(--cq-text)",
+                  transition: "transform 0.3s, opacity 0.3s",
+                  transform:
+                    isOpen
+                      ? i === 0
+                        ? "translateY(6px) rotate(45deg)"
+                        : i === 2
+                        ? "translateY(-6px) rotate(-45deg)"
+                        : "scaleX(0)"
+                      : "none",
+                  opacity: isOpen && i === 1 ? 0 : 1,
+                }}
+              />
+            ))}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile menu */}
+      <div
+        id="mobile-menu"
+        style={{
+          overflow: "hidden",
+          maxHeight: isOpen ? "460px" : "0",
+          transition: "max-height 0.4s cubic-bezier(0.16,1,0.3,1)",
+          background: "rgba(9,9,15,0.95)",
+          backdropFilter: "blur(20px)",
+          borderBottom: isOpen ? "1px solid var(--cq-border)" : "1px solid transparent",
+        }}
+      >
+        <div style={{ padding: "1rem 2rem 1.5rem" }}>
+          {navLinks.map((link) => {
+            const id = link.href.replace("#", "");
+            const isActive = activeId === id;
+            return (
+              <a
+                key={link.name}
+                href={link.href}
+                aria-current={isActive ? "true" : undefined}
+                onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
+                style={{
+                  display: "block",
+                  padding: "0.75rem 0",
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: "0.9rem",
+                  color: isActive ? "var(--cq-cyan)" : "var(--cq-muted)",
+                  textDecoration: "none",
+                  borderBottom: "1px solid var(--cq-border)",
+                  transition: "color 0.2s",
+                }}
+              >
+                {link.name}
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    </nav>
   );
 };
 

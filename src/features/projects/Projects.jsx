@@ -1,282 +1,433 @@
-import React, { useState, useRef, useEffect } from "react";
-import ClickSpark from "../../components/effects/ClickSpark";
+import React, { useEffect, useRef, useState } from "react";
 import pygameImage from "../../assets/images/pygame.png";
 import faceIdImage from "../../assets/images/faceId.jpg";
 import auraImage from "../../assets/images/Aura.png";
-import {
-  useScrollAnimation,
-  useStaggerAnimation,
-} from "../../hooks/useScrollAnimation";
+import codequestImage from "../../assets/images/codequest.png";
 
-const LetterReveal = ({ text, isHovered, delay = 0 }) => {
-  const [isVisible, setIsVisible] = useState(false);
+const projects = [
+  {
+    number: "01",
+    title: "CodeQuest Academy",
+    category: "Graduation Project · SaaS",
+    description:
+      "Online learning & examination SaaS platform with interactive coding tasks for JS, TS, Python, SQL & HTML/CSS. Auto-graded exams plus a full anti-cheat suite — fullscreen lock, focus-loss & duplicate-tab detection, DevTools detection and webcam proctoring. Admin dashboard, audit logs, achievements, notifications & subscriptions.",
+    tech: ["Next.js 16", "React", "TypeScript", "Prisma", "PostgreSQL", "Pyodide WASM"],
+    link: "https://online-learning-and-online-exam-ant.vercel.app/",
+    image: codequestImage,
+    accent: "var(--cq-purple)",
+    featured: true,
+  },
+  {
+    number: "02",
+    title: "Restaurant Delivery System",
+    category: "Team Project · Real-time",
+    description:
+      "Full-scale delivery platform with JWT + bcrypt authentication, OTP verification and rate limiting. Live real-time location tracking, an admin dashboard and Grafana-based monitoring.",
+    tech: ["React", "Node.js", "Express", "MySQL", "Socket.io", "Docker", "Grafana", "Leaflet"],
+    link: "https://github.com/TroYzBoY/DRAGON-DANCE-RESTAURANT",
+    image: null,
+    accent: "var(--cq-coral)",
+  },
+  {
+    number: "03",
+    title: "Face Recognition System",
+    category: "AI / Computer Vision",
+    description:
+      "Face ID authentication and recognition logic with security-oriented access control, built using Python and image processing.",
+    tech: ["Python", "Image Processing"],
+    link: "https://github.com/TroYzBoY/Faceless",
+    image: faceIdImage,
+    accent: "var(--cq-green)",
+  },
+  {
+    number: "04",
+    title: "Aura E-Commerce",
+    category: "E-commerce · Site Clone",
+    description:
+      "E-commerce platform with product CRUD, a REST API backend and a fully responsive UI/UX — a pixel-faithful clone of the Auriga Space storefront.",
+    tech: ["React", "Node.js", "Express", "MySQL"],
+    link: "https://github.com/TroYzBoY/AURIGASPACE-LAST-DANCE",
+    image: auraImage,
+    whiteBg: true,
+    accent: "var(--cq-green)",
+  },
+  {
+    number: "05",
+    title: "Pygame Project",
+    category: "Game Development",
+    description:
+      "Interactive game built with Python and Pygame, showcasing game mechanics and user interaction design.",
+    tech: ["Python", "Pygame"],
+    link: "https://github.com/TroYzBoY/pygame",
+    image: pygameImage,
+    accent: "var(--cq-cyan)",
+  },
+];
+
+const ProjectCard = ({ project, index }) => {
+  const [hovered, setHovered] = useState(false);
+  const cardRef = useRef(null);
 
   useEffect(() => {
-    if (isHovered) {
-      const timer = setTimeout(() => {
-        setIsVisible(true);
-      }, delay);
-      return () => clearTimeout(timer);
-    } else {
-      setIsVisible(false);
-    }
-  }, [isHovered, delay]);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.style.opacity = "1";
+            entry.target.style.transform = "translateY(0)";
+          }, index * 120);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    if (cardRef.current) observer.observe(cardRef.current);
+    return () => observer.disconnect();
+  }, [index]);
 
   return (
-    <span
-      className="inline-block text-white text-2xl md:text-5xl transition-all duration-500 whitespace-pre"
+    <a
+      ref={cardRef}
+      href={project.link}
+      target="_blank"
+      rel="noopener noreferrer"
       style={{
-        clipPath: isVisible
-          ? "polygon(0px 0px, 100% 0px, 100% 100%, 0px 100%)"
-          : "polygon(0px 0px, 100% 0px, 100% 0px, 0px 0px)",
-        transitionDelay: `${delay}ms`,
-        transform: isVisible ? "translateY(0px)" : "translateY(20px)",
-        opacity: isVisible ? 1 : 0,
-        willChange: "auto",
-        lineHeight: "1",
+        display: "flex",
+        height: "100%",
+        opacity: 0,
+        transform: "translateY(40px)",
+        transition: "opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1)",
+        textDecoration: "none",
+        color: "inherit",
       }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      {text === " " ? "\u00A0" : text}
-    </span>
-  );
-};
-
-const SlidingTextButton = ({ text, href = "#" }) => {
-  return (
-    <a href={href}>
-      <button className="relative group flex items-center justify-center cursor-pointer select-none">
-        <div className="group relative inline-flex items-center justify-center gap-3 bg-cyan-400 text-black font-medium rounded-full transition-all duration-300 hover:gap-4 overflow-hidden text-lg px-8 py-5">
-          <div className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
-          <div className="relative z-10 overflow-hidden flex items-center">
-            <div className="relative overflow-hidden inline-block cursor-pointer select-none">
-              <div className="block">
-                {text.split("").map((char, index) => (
-                  <span key={index} className="inline-block whitespace-pre">
-                    {char}
-                  </span>
-                ))}
-              </div>
-              <div className="block absolute top-0 left-0">
-                {text.split("").map((char, index) => (
-                  <span
-                    key={index}
-                    className="inline-block whitespace-pre group-hover:translate-y-0 translate-y-7 transition-transform duration-300"
-                  >
-                    {char}
-                  </span>
-                ))}
-              </div>
+      <div
+        className="cq-card"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          overflow: "hidden",
+          borderColor: hovered ? `${project.accent}44` : undefined,
+          transform: hovered ? "translateY(-6px)" : undefined,
+          boxShadow: hovered ? `0 12px 40px ${project.accent}22` : undefined,
+        }}
+      >
+        {/* Image */}
+        <div
+          style={{
+            height: 240,
+            overflow: "hidden",
+            position: "relative",
+            background: project.whiteBg
+              ? "#ffffff"
+              : project.image
+              ? "transparent"
+              : "var(--cq-bg2)",
+          }}
+        >
+          {project.image ? (
+            <img
+              src={project.image}
+              alt={project.title}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: project.whiteBg ? "contain" : "cover",
+                padding: project.whiteBg ? "1.5rem" : 0,
+                transition: "transform 0.6s cubic-bezier(0.16,1,0.3,1)",
+                transform: hovered ? "scale(1.06)" : "scale(1)",
+                filter: project.whiteBg ? "none" : "grayscale(20%)",
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                background: `radial-gradient(120% 120% at 50% 0%, ${project.accent}22, transparent 60%), var(--cq-bg2)`,
+                overflow: "hidden",
+              }}
+            >
+              {/* faint grid texture */}
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  backgroundImage:
+                    "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
+                  backgroundSize: "28px 28px",
+                  maskImage: "radial-gradient(ellipse 70% 70% at 50% 50%, black, transparent 80%)",
+                  WebkitMaskImage: "radial-gradient(ellipse 70% 70% at 50% 50%, black, transparent 80%)",
+                }}
+              />
+              <span
+                className="font-bebas"
+                style={{
+                  position: "relative",
+                  fontSize: "2.4rem",
+                  letterSpacing: "0.04em",
+                  color: project.accent,
+                  textShadow: `0 0 24px ${project.accent}66`,
+                  transition: "transform 0.5s cubic-bezier(0.16,1,0.3,1)",
+                  transform: hovered ? "scale(1.08)" : "scale(1)",
+                }}
+              >
+                {project.title.split(" ").map((w) => w[0]).join("").slice(0, 3)}
+              </span>
             </div>
+          )}
+
+          {/* Number badge */}
+          <div
+            style={{
+              position: "absolute",
+              top: "1rem",
+              right: "1rem",
+              fontFamily: "'Space Mono', monospace",
+              fontSize: "0.65rem",
+              letterSpacing: "0.1em",
+              color: project.accent,
+              background: "rgba(9,9,15,0.8)",
+              padding: "4px 8px",
+              borderRadius: "4px",
+              border: `1px solid ${project.accent}44`,
+            }}
+          >
+            {project.number}
+          </div>
+
+          {/* Hover overlay */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: `linear-gradient(to top, ${project.accent}33, transparent)`,
+              opacity: hovered ? 1 : 0,
+              transition: "opacity 0.4s ease",
+            }}
+          />
+        </div>
+
+        {/* Content */}
+        <div
+          style={{
+            padding: "1.5rem",
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "'Space Mono', monospace",
+              fontSize: "0.6rem",
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              color: project.accent,
+              marginBottom: "0.5rem",
+            }}
+          >
+            {project.category}
+          </div>
+          <h3
+            style={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontSize: "1.6rem",
+              letterSpacing: "0.03em",
+              color: "var(--cq-text)",
+              marginBottom: "0.75rem",
+              lineHeight: 1,
+            }}
+          >
+            {project.title}
+          </h3>
+          <p
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: "0.85rem",
+              lineHeight: 1.6,
+              color: "var(--cq-muted)",
+              marginBottom: "1.25rem",
+            }}
+          >
+            {project.description}
+          </p>
+
+          {/* Tech tags — pinned to bottom so all card footers align */}
+          <div
+            style={{
+              display: "flex",
+              gap: "0.5rem",
+              flexWrap: "wrap",
+              marginTop: "auto",
+              paddingTop: "1.25rem",
+            }}
+          >
+            {project.tech.map((t) => (
+              <span key={t} className="cq-tag">
+                {t}
+              </span>
+            ))}
+          </div>
+
+          {/* Arrow */}
+          <div
+            style={{
+              marginTop: "1.25rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              fontFamily: "'Space Mono', monospace",
+              fontSize: "0.7rem",
+              letterSpacing: "0.1em",
+              color: project.accent,
+              opacity: hovered ? 1 : 0,
+              transform: hovered ? "translateX(0)" : "translateX(-8px)",
+              transition: "opacity 0.3s, transform 0.3s",
+            }}
+          >
+            {project.link.includes("github.com") ? "View on GitHub →" : "View Live →"}
           </div>
         </div>
-        <div className="hidden overflow-hidden md:flex w-14 h-14 bg-cyan-400 rounded-full items-center justify-center overflow-hidden relative">
-          <div className="absolute inset-0 delay-100 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
-          <svg
-            className="w-5 h-5 text-black absolute transition-all duration-300 translate-y-0 translate-x-0 opacity-100 group-hover:translate-y-full group-hover:-translate-x-full group-hover:opacity-0"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2.5"
-              d="M7 17L17 7M17 7H7M17 7v10"
-            ></path>
-          </svg>
-          <svg
-            className="w-5 h-5 text-black absolute transition-all duration-300 translate-y-full -translate-x-full opacity-0 group-hover:translate-y-0 group-hover:translate-x-0 group-hover:opacity-100"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2.5"
-              d="M7 17L17 7M17 7H7M17 7v10"
-            ></path>
-          </svg>
-        </div>
-      </button>
+      </div>
     </a>
   );
 };
 
 const Projects = () => {
-  const [hoveredIndex, setHoveredIndex] = useState(null);
-  const headingRef = useScrollAnimation({
-    y: 60,
-    opacity: 0,
-    duration: 1.2,
-    delay: 0.2,
-  });
-  const projectsRef = useStaggerAnimation({
-    y: 80,
-    opacity: 0,
-    duration: 1,
-    stagger: 0.2,
-  });
-  const buttonRef = useScrollAnimation({
-    y: 40,
-    opacity: 0,
-    duration: 0.8,
-    delay: 0.3,
-  });
+  const sectionRef = useRef(null);
 
-  const projects = [
-    {
-      title: "Pygame Project",
-      category: "Game Development",
-      description:
-        "Interactive game development project built with Python and Pygame, showcasing game mechanics and user interaction.",
-      tech: ["Python", "Pygame", "Game Development"],
-      link: "https://github.com/TroYzBoY/pygame",
-      image: pygameImage,
-    },
-    {
-      title: "Face ID Recognition",
-      category: "AI/ML",
-      description:
-        "Face recognition system using computer vision and machine learning for identity verification and authentication.",
-      tech: ["Python", "OpenCV", "Machine Learning", "Computer Vision"],
-      link: "https://github.com/TroYzBoY/Faceless",
-      image: faceIdImage,
-    },
-    {
-      title: "Aura Mini E-commerce",
-      category: "E-commerce",
-      description:
-        "Mini e-commerce platform with product management, shopping cart, and payment integration features.",
-      tech: ["React", "Node.js", "E-commerce", "Payment Integration"],
-      link: "https://github.com/TroYzBoY/Aura-E-commerce",
-      image: auraImage,
-    },
-    {
-      title: "Site Cloning Experience",
-      category: "Web Development",
-      description:
-        "Recreating popular websites with modern web technologies, focusing on responsive design and user experience.",
-      tech: ["HTML", "CSS", "JavaScript", "Responsive Design"],
-      link: "https://github.com/TroYzBoY/Package-Site-Clone",
-      image:
-        "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=800&h=600&fit=crop",
-    },
-  ];
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          entry.target.querySelectorAll(".section-reveal").forEach((el, i) => {
+            setTimeout(() => {
+              el.style.opacity = "1";
+              el.style.transform = "translateY(0)";
+            }, i * 80);
+          });
+        }
+      },
+      { threshold: 0.1 }
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <ClickSpark
-      sparkColor="#fff"
-      sparkSize={10}
-      sparkRadius={15}
-      sparkCount={8}
-      duration={400}
+    <section
+      id="projects"
+      ref={sectionRef}
+      style={{ padding: "8rem 2rem" }}
     >
-      <section
-        id="projects"
-        className="works-section relative mt-10 px-[1rem] md:px-[4rem]"
-      >
-        <div className="max-w-[90vw] mx-auto works-section">
-          {/* Main Heading */}
-          <div
-            ref={headingRef}
-            className="text-sec w-full text-3xl lg:text-4xl font-medium max-w-3xl mb-8 sm:mb-12 leading-[1.1] lg:px-4 px-1 break-words"
-          >
-            Discover my latest work and creative solutions that bring ideas to
-            life
-          </div>
-
-          {/* Projects Grid */}
-          <div
-            ref={projectsRef}
-            className="grid grid-cols-1 md:grid-cols-2 gap-8"
-          >
-            {projects.map((project, index) => (
-              <div
-                key={index}
-                className="group will-change-transform relative"
-                onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
-              >
-                {/* Title and Category - Mobile Only / Desktop Hidden */}
-                <div className="mb-4 relative z-10">
-                  <div className="text-2xl md:hidden block md:text-4xl font-medium text-white mb-2 break-words">
-                    {project.title}
-                  </div>
-                  <div className="text-gray-400 text-base md:text-lg font-light break-words">
-                    {project.category}
-                  </div>
-                </div>
-
-                {/* Project Card */}
-                <a
-                  href={project.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block relative overflow-hidden aspect-[4/3] cursor-pointer z-0 rounded-2xl"
-                  style={{
-                    backgroundColor:
-                      project.title === "Aura Mini E-commerce"
-                        ? "#ffffff"
-                        : "transparent",
-                  }}
-                >
-                  {/* Image */}
-                  <img
-                    alt={project.title}
-                    loading={index < 2 ? "eager" : "lazy"}
-                    decoding="async"
-                    className="object-cover transition-transform duration-700 ease-out w-full h-full absolute inset-0 rounded-2xl"
-                    src={project.image}
-                    style={{
-                      transform:
-                        hoveredIndex === index ? "scale(1.05)" : "scale(1)",
-                      willChange: "auto",
-                    }}
-                  />
-
-                  {/* Dark Overlay */}
-                  <div
-                    className="absolute inset-0 bg-black transition-opacity duration-500 pointer-events-none z-10"
-                    style={{
-                      opacity: hoveredIndex === index ? 0.4 : 0,
-                      willChange: "auto",
-                    }}
-                  />
-
-                  {/* Animated Text Overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center px-8 pointer-events-none z-20">
-                    <div className="flex flex-wrap justify-center gap-1 max-w-full">
-                      {project.title.split("").map((char, charIndex) => (
-                        <LetterReveal
-                          key={charIndex}
-                          text={char}
-                          isHovered={hoveredIndex === index}
-                          delay={charIndex * 30}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </a>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Projects Button */}
+      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+        {/* Label */}
         <div
-          ref={buttonRef}
-          className="relative z-10 w-full mt-16 flex items-center justify-center"
+          className="section-reveal"
+          style={{
+            fontFamily: "'Space Mono', monospace",
+            fontSize: "0.65rem",
+            letterSpacing: "0.2em",
+            textTransform: "uppercase",
+            color: "var(--cq-cyan)",
+            marginBottom: "1rem",
+            opacity: 0,
+            transform: "translateY(20px)",
+            transition: "opacity 0.6s ease, transform 0.6s ease",
+          }}
         >
-          <SlidingTextButton text="projects" href="#projects" />
+          Projects
         </div>
 
-        {/* Cyan connector line to next section (Experience is excluded; visual only) */}
-        <div className="w-full flex justify-center mt-16">
-          <div className="absolute w-full h-[2px] bg-cyan-400/70 opacity-80" />
+        <h2
+          className="section-reveal font-bebas gradient-text"
+          style={{
+            fontSize: "clamp(2.5rem, 6vw, 5rem)",
+            marginBottom: "1rem",
+            lineHeight: 0.95,
+            opacity: 0,
+            transform: "translateY(20px)",
+            transition: "opacity 0.6s ease, transform 0.6s ease",
+          }}
+        >
+          SELECTED WORKS
+        </h2>
+        <p
+          className="section-reveal"
+          style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: "1rem",
+            color: "var(--cq-muted)",
+            marginBottom: "4rem",
+            maxWidth: 480,
+            opacity: 0,
+            transform: "translateY(20px)",
+            transition: "opacity 0.6s ease, transform 0.6s ease",
+          }}
+        >
+          A collection of projects spanning SaaS platforms, real-time systems, AI, and e-commerce.
+        </p>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+            gap: "2rem",
+          }}
+        >
+          {projects.map((project, i) => (
+            <ProjectCard key={project.number} project={project} index={i} />
+          ))}
         </div>
-      </section>
-    </ClickSpark>
+
+        <div
+          className="section-reveal"
+          style={{
+            marginTop: "3rem",
+            textAlign: "center",
+            opacity: 0,
+            transform: "translateY(20px)",
+            transition: "opacity 0.6s ease, transform 0.6s ease",
+          }}
+        >
+          <a
+            href="https://github.com/TroYzBoY"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-block",
+              padding: "0.7rem 1.5rem",
+              border: "1px solid var(--cq-border)",
+              borderRadius: "8px",
+              fontFamily: "'Space Mono', monospace",
+              fontSize: "0.75rem",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "var(--cq-muted)",
+              textDecoration: "none",
+              transition: "border-color 0.2s, color 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--cq-cyan)";
+              e.currentTarget.style.color = "var(--cq-cyan)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--cq-border)";
+              e.currentTarget.style.color = "var(--cq-muted)";
+            }}
+          >
+            View all on GitHub →
+          </a>
+        </div>
+      </div>
+    </section>
   );
 };
 

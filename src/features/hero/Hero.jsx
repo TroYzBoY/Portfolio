@@ -1,178 +1,275 @@
-import React, { lazy, Suspense, useState, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import profilePic from "../../assets/images/picc.jpg";
-import mouseScrollGif from "../../assets/gifs/mouse scroll.gif";
-import DecryptedText from "../../components/ui/DecryptedText";
-import RotatingCircle from "../../components/ui/RotatingCircle";
-import ClickSpark from "../../components/effects/ClickSpark";
 
-// Lazy load Spline to avoid build-time issues
-const Spline = lazy(() => import("@splinetool/react-spline"));
-
-// Cycling Name Component with DecryptedText animation
-const CyclingName = ({ names, delay = 4000, cycleInterval = 6000 }) => {
-  const [currentNameIndex, setCurrentNameIndex] = useState(0);
-  const [animationKey, setAnimationKey] = useState(0);
-  const [isInitialDelay, setIsInitialDelay] = useState(true);
+const Hero = () => {
+  const titleRef = useRef(null);
+  const bgRef = useRef(null);
 
   useEffect(() => {
-    // Initial 4 second delay before first animation
-    const initialDelay = setTimeout(() => {
-      setIsInitialDelay(false);
-      setAnimationKey(1); // Start first animation
-    }, delay);
+    if (!titleRef.current) return;
+    const letters = titleRef.current.querySelectorAll(".hero-letter");
+    letters.forEach((letter, i) => {
+      letter.style.animationDelay = `${i * 0.04}s`;
+    });
+  }, []);
 
-    // Cycle through names every cycleInterval
-    const cycleTimer = setInterval(() => {
-      setCurrentNameIndex((prev) => {
-        const nextIndex = (prev + 1) % names.length;
-        // Force new animation by changing key
-        setAnimationKey((prev) => prev + 1);
-        return nextIndex;
+  // Scroll parallax for hero background
+  useEffect(() => {
+    const grid = bgRef.current?.querySelector(".hero-grid");
+    const blobs = bgRef.current?.querySelectorAll(".hero-blob");
+    let raf = null;
+
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        const y = window.scrollY;
+        if (grid) grid.style.transform = `translateY(${y * 0.25}px)`;
+        blobs?.forEach((blob, i) => {
+          const speed = 0.12 + i * 0.06;
+          blob.style.marginTop = `${y * speed}px`;
+        });
+        raf = null;
       });
-    }, cycleInterval);
+    };
 
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
-      clearTimeout(initialDelay);
-      clearInterval(cycleTimer);
+      window.removeEventListener("scroll", onScroll);
+      if (raf) cancelAnimationFrame(raf);
     };
   }, []);
 
-  const currentName = names[currentNameIndex];
+  const titleText = "TEMUULEN";
 
-  // Show static text during initial delay
-  if (isInitialDelay) {
-    return (
-      <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-        {currentName}
-      </span>
-    );
-  }
-
-  // Use key to force remount and re-animation
   return (
-    <DecryptedText
-      key={`${currentName}-${animationKey}`}
-      text={currentName}
-      animateOn="view"
-      revealDirection="start"
-      speed={30}
-      maxIterations={11}
-      className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent"
-    />
-  );
-};
-
-const Hero = () => {
-  return (
-    <ClickSpark
-      sparkColor="#fff"
-      sparkSize={10}
-      sparkRadius={15}
-      sparkCount={8}
-      duration={400}
+    <section
+      id="home"
+      style={{
+        position: "relative",
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        overflow: "hidden",
+        paddingTop: "var(--nav-h)",
+      }}
     >
-      <section
-        id="home"
-        className="min-h-screen flex items-center relative overflow-hidden"
+      {/* Animated gradient + grid background */}
+      <div ref={bgRef} className="hero-bg" style={{ pointerEvents: "none" }}>
+        <div className="hero-blob hero-blob-1" />
+        <div className="hero-blob hero-blob-2" />
+        <div className="hero-blob hero-blob-3" />
+        <div className="hero-grid" />
+      </div>
+
+      {/* Gradient fade at bottom */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: "40%",
+          background: "linear-gradient(to bottom, transparent, var(--cq-bg))",
+          zIndex: 1,
+          pointerEvents: "none",
+        }}
+      />
+
+      <div
+        className="hero-layout"
+        style={{
+          position: "relative",
+          zIndex: 2,
+          width: "100%",
+          maxWidth: 1280,
+          margin: "0 auto",
+          padding: "4rem 2rem",
+          display: "grid",
+          gridTemplateColumns: "1fr clamp(200px, 30vw, 340px)",
+          gap: "4rem",
+          alignItems: "center",
+        }}
       >
-        {/* Spline Background */}
+        {/* Left: text */}
+        <div>
+          {/* Tag */}
+          <div
+            className="cq-tag reveal"
+            style={{
+              marginBottom: "1.5rem",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.5rem",
+            }}
+          >
+            <span className="status-dot" />
+            Available for work · UB Mongolia
+          </div>
+
+          {/* Big title */}
+          <h1
+            ref={titleRef}
+            className="font-bebas"
+            style={{
+              fontSize: "clamp(4rem, 12vw, 10rem)",
+              lineHeight: 0.9,
+              marginBottom: "0.5rem",
+              letterSpacing: "0.02em",
+            }}
+          >
+            {titleText.split("").map((char, i) => (
+              <span key={i} className="hero-letter gradient-text">
+                {char}
+              </span>
+            ))}
+          </h1>
+          <h1
+            className="font-bebas gradient-text"
+            style={{
+              fontSize: "clamp(4rem, 12vw, 10rem)",
+              lineHeight: 0.9,
+              marginBottom: "2rem",
+              letterSpacing: "0.02em",
+            }}
+          >
+            MUNKHBOLD
+          </h1>
+
+          {/* Subtitle */}
+          <p
+            className="reveal stagger-2"
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: "clamp(1rem, 2vw, 1.25rem)",
+              color: "var(--cq-muted)",
+              maxWidth: 480,
+              lineHeight: 1.6,
+              marginBottom: "2.5rem",
+            }}
+          >
+            Building scalable web platforms, real-time systems, and secure APIs.
+            <br />
+            <span style={{ color: "var(--cq-cyan)" }}>React · Next.js · Node.js · PostgreSQL</span>
+          </p>
+
+          {/* CTA buttons */}
+          <div
+            className="reveal stagger-3"
+            style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}
+          >
+            <a
+              href="#projects"
+              className="btn-primary"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              View Projects <span className="arrow">→</span>
+            </a>
+            <a
+              href="#contact"
+              className="btn-ghost"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              Get in Touch
+            </a>
+            {/* TODO: drop your CV PDF at public/Temuulen_Munkhbold_CV.pdf */}
+            <a
+              href="/Temuulen_Munkhbold_CV.pdf"
+              className="btn-ghost"
+              download
+            >
+              Download CV <span className="arrow">↓</span>
+            </a>
+          </div>
+
+          {/* Stats row */}
+          <div
+            className="reveal stagger-4 hero-stats"
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "3rem",
+              marginTop: "3rem",
+              paddingTop: "2rem",
+              borderTop: "1px solid var(--cq-border)",
+            }}
+          >
+            {[
+              { value: "5+", label: "Projects" },
+              { value: "15+", label: "Technologies" },
+              { value: "3.4", label: "GPA / 4.0" },
+            ].map((stat) => (
+              <div key={stat.label}>
+                <div
+                  className="font-bebas gradient-text"
+                  style={{ fontSize: "2.5rem", lineHeight: 1 }}
+                >
+                  {stat.value}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "'Space Mono', monospace",
+                    fontSize: "0.65rem",
+                    color: "var(--cq-muted)",
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    marginTop: "0.25rem",
+                  }}
+                >
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right: profile pic */}
         <div
-          className="absolute inset-0 w-full h-full z-0 pointer-events-none"
-          style={{ transform: "scale(1)" }}
+          className="reveal hero-photo"
+          style={{
+            position: "relative",
+            width: "min(340px, 35vw)",
+            aspectRatio: "1",
+          }}
         >
-          <Suspense fallback={null}>
-            <Spline scene="https://prod.spline.design/6VZLwtIfNyyQBOx5/scene.splinecode" />
-          </Suspense>
+          <div
+            style={{
+              position: "absolute",
+              inset: "-20px",
+              borderRadius: "50%",
+              background:
+                "conic-gradient(from 0deg, var(--cq-cyan), var(--cq-purple), var(--cq-cyan))",
+              opacity: 0.15,
+              animation: "rotate 8s linear infinite",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: "50%",
+              border: "1px solid rgba(91,140,255,0.2)",
+            }}
+          />
+          <img
+            src={profilePic}
+            alt="Temuulen Munkhbold"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              borderRadius: "50%",
+              filter: "grayscale(20%)",
+            }}
+          />
         </div>
-
-        {/* Content Container */}
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-24">
-          <div className="flex flex-col lg:flex-row ml-10 mr-10 items-center justify-between gap-18 lg:gap-12">
-            {/* Left Side - Text Content */}
-            <div className="flex-1 text-center lg:text-left">
-              <p className="text-lg md:text-xl text-white mb-2">Hello I'm</p>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-                <CyclingName
-                  names={["Temuulen", "fenrir", "TroYzBoY"]}
-                  delay={3000}
-                  cycleInterval={5000}
-                />
-              </h1>
-              <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-                Munkhbold
-              </h2>
-              <p className="text-2xl md:text-3xl text-white mb-4 font-semibold">
-                Software Engineer
-              </p>
-              <div className="text-lg md:text-xl text-white mb-8">
-                Full Stack Developer
-                <br />
-                Junior
-              </div>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <a
-                  href="#projects"
-                  className="px-8 py-3 bg-cyan-400 text-black font-semibold rounded-lg hover:bg-cyan-300 transition-all duration-300 shadow-[0_0_20px_rgba(0,255,255,0.5)] hover:shadow-[0_0_30px_rgba(0,255,255,0.8)]"
-                >
-                  Explore My Work
-                </a>
-                <a
-                  href="#contact"
-                  className="px-8 py-3 border-2 border-cyan-400 text-cyan-400 font-semibold rounded-lg hover:bg-cyan-400/10 transition-all duration-300"
-                >
-                  Connect with Me
-                </a>
-              </div>
-            </div>
-
-            {/* Right Side - Picture */}
-            <div className="flex-1 flex justify-center lg:justify-end relative">
-              <div className="w-full max-w-md lg:max-w-lg relative">
-                {/* Rotating Circle Background - positioned behind */}
-                <div
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                  style={{ zIndex: 1 }}
-                >
-                  <RotatingCircle className="opacity-60" />
-                </div>
-
-                <div
-                  className="relative w-full aspect-square mx-auto"
-                  style={{ zIndex: 2 }}
-                >
-                  <div className="rounded-full overflow-hidden w-full h-full relative">
-                    <img
-                      src={profilePic}
-                      alt="Me"
-                      className="object-cover shadow-md shadow-cyan-400 p-3 rounded-full"
-                      style={{
-                        position: "absolute",
-                        height: "100%",
-                        width: "100%",
-                        inset: "0px",
-                        color: "transparent",
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Scroll Down Indicator */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2">
-            <p className="text-sm text-cyan-400/70 uppercase tracking-wider mb-2">
-              scroll down
-            </p>
-            <img
-              src={mouseScrollGif}
-              alt="Scroll down"
-              className="w-20 h-20 object-contain"
-            />
-          </div>
-        </div>
-      </section>
-    </ClickSpark>
+      </div>
+    </section>
   );
 };
 
