@@ -177,11 +177,10 @@ const Hero = () => {
             >
               Get in Touch
             </a>
-            {/* TODO: drop your CV PDF at public/Temuulen_Munkhbold_CV.pdf */}
             <a
-              href="/Temuulen_Munkhbold_CV.pdf"
+              href="/Temuulen_CV_FullStack.docx"
               className="btn-ghost"
-              download
+              download="Temuulen_CV_FullStack.docx"
             >
               Download CV <span className="arrow">↓</span>
             </a>

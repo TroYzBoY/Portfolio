@@ -1,8 +1,65 @@
-import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense, Component, useState } from "react";
 
 const Spline = lazy(() => import("@splinetool/react-spline"));
 
+/* Catches any error thrown while loading/rendering the Spline scene so the
+   page never ends up as a blank black screen (common on production builds). */
+class SplineBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { failed: false };
+  }
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch(error) {
+    console.error("Spline scene failed to load:", error);
+  }
+  render() {
+    if (this.state.failed) return this.props.fallback;
+    return this.props.children;
+  }
+}
+
+/* Branded fallback shown while loading or if the 3D scene can't load */
+const SplineFallback = ({ loading }) => (
+  <div
+    style={{
+      position: "absolute",
+      inset: 0,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "1.25rem",
+      background:
+        "radial-gradient(120% 100% at 50% 30%, rgba(91,140,255,0.12), transparent 60%), var(--cq-bg)",
+    }}
+  >
+    <div
+      className="font-bebas gradient-text"
+      style={{ fontSize: "clamp(3rem, 9vw, 7rem)", lineHeight: 0.9, letterSpacing: "0.02em" }}
+    >
+      TEMUULEN
+    </div>
+    {loading && (
+      <div
+        style={{
+          width: 32,
+          height: 32,
+          border: "2px solid var(--cq-border)",
+          borderTopColor: "var(--cq-cyan)",
+          borderRadius: "50%",
+          animation: "rotate 0.8s linear infinite",
+        }}
+      />
+    )}
+  </div>
+);
+
 const Intro = () => {
+  const [loaded, setLoaded] = useState(false);
+
   const scrollDown = () => {
     document.getElementById("home")?.scrollIntoView({ behavior: "smooth" });
   };
@@ -28,9 +85,18 @@ const Intro = () => {
           zIndex: 0,
         }}
       >
-        <Suspense fallback={null}>
-          <Spline scene="https://prod.spline.design/lxEQ73FF9ft956mk/scene.splinecode" />
-        </Suspense>
+        {/* Branded placeholder underneath — visible until the scene paints */}
+        {!loaded && <SplineFallback loading />}
+
+        <SplineBoundary fallback={<SplineFallback loading={false} />}>
+          <Suspense fallback={null}>
+            <Spline
+              scene="https://prod.spline.design/lxEQ73FF9ft956mk/scene.splinecode"
+              onLoad={() => setLoaded(true)}
+              onError={() => console.error("Spline onError fired")}
+            />
+          </Suspense>
+        </SplineBoundary>
       </div>
 
       {/* Bottom gradient fade into portfolio */}
