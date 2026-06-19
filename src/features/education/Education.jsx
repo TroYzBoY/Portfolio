@@ -95,7 +95,7 @@ const Education = () => {
                 lineHeight: 1,
               }}
             >
-              NATIONAL UNIVERSITY OF MONGOLIA
+              INDRA CYBER INSTITUTE
             </h3>
             <div
               style={{
@@ -105,7 +105,7 @@ const Education = () => {
                 marginBottom: "1rem",
               }}
             >
-              Bachelor's in Computer Science &amp; Software Engineering
+              Fullstack Developer
             </div>
             <div
               style={{
@@ -139,7 +139,7 @@ const Education = () => {
                   className="font-bebas gradient-text"
                   style={{ fontSize: "2rem", lineHeight: 1 }}
                 >
-                  4
+                  1
                 </div>
                 <div
                   style={{
@@ -150,7 +150,7 @@ const Education = () => {
                     textTransform: "uppercase",
                   }}
                 >
-                  Years
+                  Year
                 </div>
               </div>
             </div>
@@ -163,8 +163,8 @@ const Education = () => {
                 marginTop: "1rem",
               }}
             >
-              Focused on algorithms, data structures, software engineering
-              principles, and full-stack web development.
+              Completed fullstack developer training with practical web development
+              and software engineering projects.
             </p>
           </div>
 
@@ -240,7 +240,7 @@ const Education = () => {
               </div>
               {[
                 { lang: "Mongolian", level: "Native" },
-                { lang: "English", level: "Professional" },
+                { lang: "English", level: "Intermediate" },
               ].map((item) => (
                 <div
                   key={item.lang}
