@@ -83,7 +83,7 @@ const Education = () => {
                 marginBottom: "1rem",
               }}
             >
-              2021 – 2025
+              2025 – 2026
             </div>
             <h3
               className="font-bebas"
